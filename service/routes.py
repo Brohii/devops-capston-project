@@ -62,7 +62,22 @@ def create_accounts():
 ######################################################################
 
 # ... place you code here to LIST accounts ...
+    ######################################################################
+    # LIST ALL ACCOUNTS
+    ######################################################################
+@app.route("/accounts", methods=["GET"])
+def list_accounts():
+    """
+    List all Accounts
+    This endpoint will list all Accounts
+    """
+    app.logger.info("Request to list Accounts")
 
+    accounts = Account.all()
+    account_list = [account.serialize() for account in accounts]
+
+    app.logger.info("Returning [%s] accounts", len(account_list))
+    return jsonify(account_list), 200  # Return the list of accounts in JSON format with status code 200
 
 ######################################################################
 # READ AN ACCOUNT
@@ -88,12 +103,35 @@ def get_account(account_id):
         abort(404, f"Account with id [{account_id}] could not be found.")
 
     return jsonify(account.serialize()), 200
-    
+
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
 ######################################################################
 
 # ... place you code here to UPDATE an account ...
+
+        ######################################################################
+    # UPDATE AN EXISTING ACCOUNT
+    ######################################################################
+   
+@app.route("/accounts/<int:account_id>", methods=["PUT"])
+def update_account(account_id):
+    """
+    Update an Account
+    This endpoint will update an Account based on the posted data
+    """
+    app.logger.info("Request to update an Account with id: %s", account_id)
+
+    account = Account.find(account_id)
+    if not account:
+        abort(404, f"Account with id [{account_id}] could not be found.")
+
+    data = request.get_json()
+    account.deserialize(data)
+    account.update()
+
+    return jsonify(account.serialize()), 200  # Return the updated account data in JSON format with status code 200
+
 
 
 ######################################################################
@@ -102,6 +140,23 @@ def get_account(account_id):
 
 # ... place you code here to DELETE an account ...
 
+    ######################################################################
+    # DELETE AN ACCOUNT
+    ######################################################################
+@app.route("/accounts/<int:account_id>", methods=["DELETE"])
+def delete_account(account_id):
+    """
+    Delete an Account
+    This endpoint will delete an Account based on the account_id that is requested
+    """
+    app.logger.info("Request to delete an Account with id: %s", account_id)
+
+    account = Account.find(account_id)
+    if account:
+        account.delete()
+        return "", 204  # Return an empty response with status code 204 (NO CONTENT)
+    else:
+        abort(404, f"Account with id [{account_id}] could not be found.")
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
